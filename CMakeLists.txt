@@ -5,8 +5,8 @@ set(version 2.0.1)
 
 set(novec 0)
 set(SSE2 0)
-set(AVX 1)
-set(AVX2 0)
+set(AVX 0)
+set(AVX2 1)
 
 if(novec EQUAL 1)
 	set(SSE2 0)

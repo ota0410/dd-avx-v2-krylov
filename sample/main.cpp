@@ -30,6 +30,7 @@ int main(int argc, char* argv[])
    y.broadcast(0);
 
    DD_AVX_axpy(a, x, y);
+<<<<<<< HEAD
    y.print_all();
    std::cout << "------------------------------------------------" << std::endl;
    DD_AVX_SpMV(A, x ,y);
@@ -54,6 +55,15 @@ int main(int argc, char* argv[])
    //   std::cout << A.N << std::endl;
    da.hello( da );
    //   std::cout << da << std::endl;
+=======
+   DD_AVX_SpMV(A, x, y);
+   DD_AVX_TSpMV(A, x, y);
+   a.dot(x,y);
+   da.dot(x,y);
+//   y.print_all();
+   a.print();
+
+>>>>>>> e3fd2837800a6f96737af2c3a92f989eb1bcb275
    a = (double)1;
    a = da = 1.0;
 

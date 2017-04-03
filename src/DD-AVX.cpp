@@ -376,6 +376,7 @@ void DD_Vector::broadcast(DD_Scalar val){
 
 ///////////// D_Matrix ////////////////
 // input and output functions are written in System.c
+/*
 void D_Matrix::print_all(){
 #ifdef ddavx_debug
 	 printf("DD_Matrix::print_all()\n");
@@ -386,6 +387,7 @@ void D_Matrix::print_all(){
        count++;
      printf("%d\t%d\t%e\n",count,col[i],val[i]);
    }
+<<<<<<< HEAD
 }
 
 void D_Matrix::free(){
@@ -396,3 +398,7 @@ void D_Matrix::free(){
      delete val;
      delete col;
 }
+=======
+}+
+*/
+>>>>>>> e3fd2837800a6f96737af2c3a92f989eb1bcb275

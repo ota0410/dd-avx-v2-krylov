@@ -1,0 +1,25 @@
+#coding:utf-8
+
+print("γの値を入力してください\n")
+gamma = gets.chomp.to_f
+print("つぎに行列のサイズを入力してください\n")
+n = gets.chomp.to_i
+nnz = 3*n-2
+
+file = File.open("gamma.txt","w")
+
+file.print("%%MatrixMarket matrix coordinate real general\n")
+file.print("#{n}\s#{n}\s#{nnz}\n")
+file.print("1 1 2\n")
+file.print("2 1 1\n")
+
+count = 1
+while count < n-1 
+  file.print("#{count}\s#{count+1}\s#{gamma}\n")
+  file.print("#{count+1}\s#{count+1}\s2\n")
+  file.print("#{count+2}\s#{count+1}\s1\n")
+  count += 1
+end
+
+file.print("#{n-1}\s#{n}\s#{gamma}\n")
+file.print("#{n}\s#{n}\s2\n")

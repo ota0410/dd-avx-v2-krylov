@@ -368,3 +368,10 @@ DD_Scalar::operator double() {
    a = this->hi;
    return a;
 }
+
+void D_Scalar::hello( D_Scalar alpha ){
+#ifdef ddavx_debug
+  printf("hello %f\n",alpha);
+#endif
+  printf("hello %f\n",alpha);
+}

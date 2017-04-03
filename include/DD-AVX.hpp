@@ -6,14 +6,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include<omp.h>
-#include <DD-AVX_Config.hpp>
-#include <DD-AVX_MACRO_Scalar.hpp>
+#include <omp.h>
+#include "DD-AVX_Config.hpp"
+#include "DD-AVX_MACRO_Scalar.hpp"
 
 #if USE_AVX==1
-	#include <DD-AVX_MACRO_AVX.hpp>
+	#include "DD-AVX_MACRO_AVX.hpp"
 #elif USE_SSE2==1
-	#include <DD-AVX_MACRO_SSE2.hpp>
+	#include "DD-AVX_MACRO_SSE2.hpp"
 #else
 	#define DD_AVX_DECLAR\
 		double p1,p2,tq,bhi,blo,chi,clo,sh,eh,sl,el,th,tl,t0,t1,t2,t3
@@ -91,6 +91,8 @@ class D_Scalar{
 
       D_Scalar nrm2(D_Vector vx);
       D_Scalar nrm2(DD_Vector vx);
+
+      void hello( D_Scalar a );
 };
 
 class DD_Scalar{
@@ -373,6 +375,6 @@ extern void DD_AVX_SpMV(D_Matrix A, DD_Vector vx, DD_Vector vy);
 //CRS
 extern void DD_AVX_SpMV_CRS_D(D_Matrix A, D_Vector vx, D_Vector vy);
 extern void DD_AVX_SpMV_CRS_DD(D_Matrix A, DD_Vector vx, DD_Vector vy);
-
+extern void DD_AVX_hello(D_Scalar alpha);
 
 #endif

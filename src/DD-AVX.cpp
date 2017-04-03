@@ -380,7 +380,19 @@ void D_Matrix::print_all(){
 #ifdef ddavx_debug
 	 printf("DD_Matrix::print_all()\n");
 #endif
+   int count = 0;
    for(int i=0;i<nnz;i++){
-   	printf("%d\t%d\t%e\n",row[i],col[i],val[i]);
+     if(row[count+1] <= i)
+       count++;
+     printf("%d\t%d\t%e\n",count,col[i],val[i]);
    }
+}
+
+void D_Matrix::free(){
+#ifdef ddavx_debug
+     printf("DD_Matrix::free()\n");
+#endif
+     delete row;
+     delete val;
+     delete col;
 }

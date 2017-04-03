@@ -135,7 +135,9 @@ void D_Matrix::input_coo(FILE *file){
    {
       if( fgets(buf, 1024, file) == NULL )
       {
-	 printf("cant read data, [row col value]\n"); abort();
+	 printf("can't read data, [row col value]\n");
+	 printf("bar\n");
+	 abort();
       }
       if( sscanf(buf,"%d %d %lf",&idx, &jdx, &value) != 3 )
       {
@@ -149,12 +151,12 @@ void D_Matrix::input_coo(FILE *file){
 
 void D_Matrix::input_crs(FILE* file){
 	char	buf[1024];
-	int	i;
+	int	i,j;
 	int idx, jdx, count=0, jb = 1;
 	double value;
 
 	/* read data */
-	row = new int[nnz];
+	row = new int[N+1];
 	col = new int[nnz];
 	val = new double[nnz];
 	row[0] = 0;
@@ -162,27 +164,43 @@ void D_Matrix::input_crs(FILE* file){
 
 	for(i=0;i<nnz;i++)
 	{
-		if( fgets(buf, 1024, file) == NULL )
-		{
-			printf("cant read data, [row col value]\n");
-			abort();
-		}
-		if( sscanf(buf,"%d %d %lf",&idx, &jdx, &value) != 3 )
-		{
-			printf("not data, [col=%d,row=%d,val=%f]\n",idx,jdx,value);
-			abort();
-		}
-		//printf("%d %d %e %d\n",idx,jdx,value, jb);
-
-		if(jb != jdx){
-			row[jdx-1] = i-1;
-			//printf("%d,%d\n",jdx-1,row[jdx-1]);
-		}
-		jb = jdx;
-		count++;
-
-		col[i] = idx-1;
-		val[i] = value;
+	  if( fgets(buf, 1024, file) == NULL )
+	    {
+	      printf("can't read data, [row col value]\n");
+	      printf("hoge\n");
+	      abort();
+	    }
+	  
+	  if( sscanf(buf,"%d %d %lf",&idx, &jdx, &value) != 3 )
+	    {
+	      printf("not data, [col=%d,row=%d,val=%f]\n",idx,jdx,value);
+	      abort();
+	    }
+	  //printf("%d %d %e %d\n",idx,jdx,value, jb);
+	  
+	  if(jb != jdx){
+	    row[jdx-1] = i-1;
+	    //printf("%d,%d\n",jdx-1,row[jdx-1]);
+	  }
+	  jb = jdx;
+	  count++;
+	  
+	  col[i] = idx-1;
+	  val[i] = value;
+		
 	}
-	row[N+1] = nnz;
+	row[N] = nnz;
+	for(j=1;j<N;j++)
+	  row[j] += 1;
+	/*
+	for(j=0;j<nnz;j++)
+	  printf("%d  %d\n",j,col[j]);
+	printf("----------------------こる--------------------------------\n");
+	for(j=0;j<N+1;j++)
+	  printf("%d  %d\n",j,row[j]);
+	printf("---------------------ろお--------------------------------------\n");
+	for(j=0;j<nnz;j++)
+	  printf("%d  %d\n",j,val[j]);
+	printf("---------------------------------val----------------------------\n");
+	*/
 }

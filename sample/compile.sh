@@ -1,1 +1,1 @@
-g++ -O3 -fopenmp main.cpp ../libddavx.a -lddavx -I../include
+g++ -O3 -fopenmp main.cpp -I../libddavx.a -L../include -lddavx 

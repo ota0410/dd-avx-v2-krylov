@@ -24,6 +24,7 @@ int main(int argc, char* argv[])
 
    DD_AVX_axpy(a, x, y);
    DD_AVX_SpMV(A, x, y);
+   DD_AVX_TSpMV(A, x, y);
    a.dot(x,y);
    da.dot(x,y);
 //   y.print_all();

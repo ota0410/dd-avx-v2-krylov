@@ -154,7 +154,7 @@ void D_Matrix::input_crs(FILE* file){
 	double value;
 
 	/* read data */
-	row = new int[nnz];
+	row = new int[N+1];
 	col = new int[nnz];
 	val = new double[nnz];
 	row[0] = 0;

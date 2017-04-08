@@ -1,6 +1,6 @@
 CXX=g++
 
-CXXFLAGS=-O3 -mavx2 -fopenmp -lddavx
+CXXFLAGS=-O3 -mavx -fopenmp -lddavx
 
 SRC=./main.cpp
 OBJ=main.o ../libddavx.a

@@ -25,18 +25,18 @@ void D_Matrix::input(const char* filename){
    //file open
    if( filename==NULL )
    {
-      printf("filename is NULL\n");
+      printf("DD-AVX system: filename is NULL\n");
       abort();
    }
    file = fopen(filename, "r");
    if( file==NULL )
    {
-      printf("can not open file %s\n",filename);
+      printf("DD-AVX system: can not open file %s\n",filename);
       abort();
    }
    if( fgets(buf, 256, file) == NULL )
    {
-      printf("blank file %s\n",filename);
+      printf("DD-AVX system: blank file %s\n",filename);
       abort();
    }
 
@@ -52,29 +52,29 @@ void D_Matrix::input(const char* filename){
 
    if( strncmp(banner, MM_BANNER, strlen(MM_BANNER)) != 0)
    {
-      printf("Not Matrix Market banner, banner is %s\n",banner);
+      printf("DD-AVX system: Not Matrix Market banner, banner is %s\n",banner);
       abort();
    }
    if( strncmp(fmt, MM_FMT, strlen(MM_FMT))!=0 )
    {
-      printf("Not Coodinate format\n");
+      printf("DD-AVX system: Not Coodinate format\n");
       abort();
    }
    if( strncmp(dtype, MM_TYPE_REAL, strlen(MM_TYPE_REAL))!=0 )
    {
-      printf("Not real\n");
+      printf("DD-AVX system: Not real\n");
       abort();
    }
    if( strncmp(dstruct, MM_TYPE_GENERAL, strlen(MM_TYPE_GENERAL))!=0 )
    {
-      printf("Not general\n");
+      printf("DD-AVX system: Not general\n");
       abort();
    }
    do
    {
       if( fgets(buf, 1024, file) == NULL )
       {
-	 printf("check size error\n");
+	 printf("DD-AVX system: check size error\n");
 	 abort();
       }
    }while( buf[0]=='%' );
@@ -83,10 +83,10 @@ void D_Matrix::input(const char* filename){
    //check size
    if( sscanf(buf, "%d %d %d", &col, &row, &nz ) != 3 )
    {
-      printf("matrix size in unknown\n");
+      printf("DD-AVX system: matrix size in unknown\n");
       abort();
       if(col != row){
-	 printf("matrix is not square matrix (row!=col)\n");
+	 printf("DD-AVX system: matrix is not square matrix (row!=col)\n");
 	 abort();
       }
    }
@@ -108,7 +108,7 @@ void D_Matrix::input(const char* filename){
 	 input_crs(file);
 	 break;
       default:
-	 printf("error, format is %d",format);
+	 printf("DD-AVX system: error, format is %d",format);
    }
 
    rewind(file);
@@ -135,11 +135,11 @@ void D_Matrix::input_coo(FILE *file){
    {
       if( fgets(buf, 1024, file) == NULL )
       {
-	 printf("cant read data, [row col value]\n"); abort();
+	 printf("DD-AVX system: cant read data, [row col value]\n"); abort();
       }
       if( sscanf(buf,"%d %d %lf",&idx, &jdx, &value) != 3 )
       {
-	 printf("not data, [col=%d,row=%d,val=%f]\n",idx,jdx,value); abort();
+	 printf("DD-AVX system: not data, [col=%d,row=%d,val=%f]\n",idx,jdx,value); abort();
       }
       col[i] = idx-1;
       row[i] = jdx-1;
@@ -158,18 +158,18 @@ void D_Matrix::input_crs(FILE* file){
 	col = new int[nnz];
 	val = new double[nnz];
 	row[0] = 0;
-	printf("format CRS, N = %d, nnz = %d, filesize = %.3f KB\n",N,nnz,((double)nnz*2+N)/1000);
+	printf("DD-AVX system: format CRS, N = %d, nnz = %d, filesize = %.3f KB\n",N,nnz,((double)nnz*2+N)/1000);
 
 	for(i=0;i<nnz;i++)
 	{
 		if( fgets(buf, 1024, file) == NULL )
 		{
-			printf("cant read data, [row col value]\n");
+			printf("DD-AVX system: cant read data, [row col value]\n");
 			abort();
 		}
 		if( sscanf(buf,"%d %d %lf",&idx, &jdx, &value) != 3 )
 		{
-			printf("not data, [col=%d,row=%d,val=%f]\n",idx,jdx,value);
+			printf("DD-AVX system: not data, [col=%d,row=%d,val=%f]\n",idx,jdx,value);
 			abort();
 		}
 		//printf("%d %d %e %d\n",idx,jdx,value, jb);
@@ -184,5 +184,5 @@ void D_Matrix::input_crs(FILE* file){
 		col[i] = idx-1;
 		val[i] = value;
 	}
-	row[N+1] = nnz;
+	row[N] = nnz;
 }

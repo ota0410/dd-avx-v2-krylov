@@ -63,7 +63,7 @@ void DD_AVX_SpMV_CRS_DD(D_Matrix A, DD_Vector vx, DD_Vector vy)
 #else
 #pragma omp parallel for schedule(guided)  private(j,is,ie,j0,j1,tt,p1,p2,tq,bhi,blo,chi,clo,sh,sl,th,tl,eh,el)
 #endif
-   for(i=0;i<n;i++)
+   for(i=0;i<n+1;i++)
    {
 #if defined(USE_AVX)
       DD_AVX_AVX_TYPE tt_hi = DD_AVX_AVX_FUNC(setzero_pd)();

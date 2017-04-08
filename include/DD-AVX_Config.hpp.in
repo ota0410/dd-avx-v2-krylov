@@ -3,4 +3,4 @@
 #define USE_SSE2 @SSE2@
 #define USE_AVX @AVX@
 #define USE_AVX2 @AVX2@
-#define PRINT_VERSION printf("@version@\n");
+#define PRINT_VERSION printf("DD-AVX system: version @version@\n");

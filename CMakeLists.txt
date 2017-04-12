@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(DD-AVX CXX)
-set(serial "2.0.1")
+set(serial "2.0.2")
 set(version 2.0.1)
 
 set(novec 0)

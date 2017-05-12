@@ -93,13 +93,14 @@
 
 /*********************************************************/
 #define DD_AVX_DIV(a_hi,a_lo,b_hi,b_lo,c_hi,c_lo) \
-	tl  = (b_hi) / (c_hi); \
+  	tl  = (b_hi) / (c_hi);			  \
 	DD_AVX_MULD(eh,el,(c_hi),(c_lo),tl); \
 	DD_AVX_TWO_DIFF((b_hi),eh,sh,sl); \
 	sl -= el; \
 	sl += (b_lo); \
 	th  = (sh+sl) / (c_hi); \
 	DD_AVX_FAST_TWO_SUM(tl,th,(a_hi),(a_lo))
+
  /**********************************************************
   (a_hi,a_lo) <- SQRT( (b_hi,b_lo) )
  **********************************************************/

@@ -1,31 +1,38 @@
-#include "../include/DD-AVX.hpp"
-#include <math.h>
+#include <DD-AVX.hpp>
 #include <time.h>
 #include <iostream>
-/*************************************************
-DDの限界はN=13(程度),Dの限界はN=???
-gammaの値とサイズNの間の関係がよく分からん
-**************************************************/
+#include <quadmath.h>
 
 using std::cout;
 using std::endl;
 
-int main( int argc, char* argv[] ){
+#define N A.N
 
-  char filename1[256] = {'\0'};/*普通の行列*/
+int main( int argc, char* argv[] )
+{
+
+  char filename1[256] = {'\0'};/*元の行列*/
   char filename2[256] = {'\0'};/*転置行列*/
 
-  sprintf(filename1, "%s",argv[1] );
-  sprintf(filename2, "%s",argv[2] );
+  sprintf( filename1, "%s",argv[1] );
+  sprintf( filename2, "%s",argv[2] );
+ 
   D_Matrix A,tA;
-  A.input(filename1);
-  tA.input(filename2);
-  A.format = 1;/*CRS形式で保存*/
-  tA.format = 1;
+  A.input( filename1 );
+  tA.input( filename2 );
 
-  #define N A.N
+  DD_Vector b;
+  DD_Vector init;
+  DD_Vector x;
+  DD_Vector y;
+  DD_Vector r;
+  DD_Vector rr;
+  DD_Vector p;
+  DD_Vector pp;
+  DD_Vector q;
+  DD_Vector qq;
+  //  __float128 r_nrm2;
 
-  D_Vector init,b,x,y,r,rr,p,pp,q,qq;
   init.malloc( N );
   b.malloc( N );
   r.malloc( N );
@@ -37,11 +44,23 @@ int main( int argc, char* argv[] ){
   q.malloc( N );
   qq.malloc( N );
 
-  D_Scalar num,param,alf,bet,a_scl,b_scl,c_scl,minus;
-  D_Scalar dist0,dist1,rate;
-  //srand( ( unsigned )time( NULL ) );
-  num = ( double )( rand() % 10 + 2 );/*値を適当に*/
-  x.broadcast( num );
+  DD_Scalar b_nrm2;
+  DD_Scalar resid;
+  DD_Scalar r_nrm2;
+  DD_Scalar a_scl;
+  DD_Scalar b_scl;
+  DD_Scalar c_scl;
+  DD_Scalar alpha;
+  DD_Scalar beta;
+  //  D_Scalar param;
+
+  srand( ( unsigned )time( NULL ) );
+  
+  for (int i = 0; i < N ; i++) {
+    x.hi[i] = ( DD_Scalar )( rand() % 10 + 2 );
+    x.lo[i] = 0.0;
+  }
+  
   init.broadcast( 1 );
   b.broadcast( 0 );
   r.broadcast( 0 );
@@ -53,71 +72,105 @@ int main( int argc, char* argv[] ){
   y.broadcast( 0 );
 
   DD_AVX_SpMV( A,x,y );
-  DD_AVX_SpMV( A,init,b );/* b = A * init */
-  init.free();/*メモリリーク対策*/
+  DD_AVX_SpMV( A,init,b );
+  init.free();
 
-  DD_AVX_xpay( b,(D_Scalar)(-1),y );
+  DD_AVX_xpay( b,( DD_Scalar )(-1.0),y );
   r.copy( y );
-  y.free();/*メモリリーク対策*/
+  y.free();
 
-  do { /*内積が非零になるまで*/
-    num = ( rand() % 5 + 2 );
-    rr.broadcast( num );
-    param.dot(r,rr);
-  } while ( param == 0 );
+  for (int i = 0; i < N; i++) {
+    rr.hi[i] = ( DD_Scalar )( rand() % 10 + 2 );
+    rr.lo[i] = 0.0;
+    r.lo[i] = 0.0;
+  }
 
   p.copy( r );
   pp.copy( rr );
-  DD_AVX_nrm2( r,&dist0 );
-  DD_AVX_nrm2( b,&dist1 );
  
-  int count = 1;
-  rate = ( dist0 / dist1 );
-  cout<< "---------------------------------相対残差--------------------------------------\n" << endl;
-  while( ( dist0 / dist1 ) > pow( 10,-12 ) ){
-   
-    cout << count << ":";
-    rate.print();/*相対残差*/
-
-    DD_AVX_SpMV( A,p,q );/*q = A*p */
-    DD_AVX_SpMV( tA,pp,qq );/* 行列の転置処理 q_k = A_t * p_k */
-    
-    alf = ( a_scl.dot( rr,r ) / b_scl.dot( pp,q ) );
-    param = a_scl;
-
-    DD_AVX_axpy( alf,p,x );
-    DD_AVX_axpy( -alf,q,r );
-    DD_AVX_axpy( -alf,qq,rr );
-
-    q.broadcast( 0 );
-    qq.broadcast( 0 );
-
-    bet = ( c_scl.dot( rr,r ) / param );
-
-    DD_AVX_xpay(r,bet,p);
-    DD_AVX_xpay(rr,bet,pp);
-    
-    DD_AVX_nrm2( r,&dist0 );
-    DD_AVX_nrm2( b,&dist1 );
-
-    rate = ( dist0 / dist1 );
-    count++;
+  for (int i = 0; i < N; i++) {
+    r_nrm2.hi += (r.hi[i] * r.hi[i]) + 2 * r.hi[i] * r.lo[i];
+    r_nrm2.lo += (r.lo[i] * r.lo[i]);
+    b_nrm2.hi += (b.hi[i] * b.hi[i]) + 2 * b.hi[i] * b.lo[i];
+    b_nrm2.lo += (b.lo[i] * b.lo[i]);
   }
-  cout << "-------------------------------------------------------------------------------\n" << endl;
-  /*
- for(int i=0;i<N;i++)
-    x.print( i );
-  */
- A.free();/*free関数はやむなく自作*/
- tA.free();
+
+  //  r.print_all();
+  //  DD_AVX_nrm2(r,&r_nrm2);
+  // r_nrm2.print();
+
+  r_nrm2 = sqrt( r_nrm2 );
+  b_nrm2 = sqrt( b_nrm2 );
+
+  resid = (DD_Scalar)r_nrm2 / (DD_Scalar)b_nrm2 ;
+  //  D_Scalar z = r_nrm2.hi / b_nrm2.hi;
+  // z.print();
+
+  cout << "---------------------------------相対残差--------------------------------------\n" << endl;
+
+  int count = 1;
+  while ( resid > pow( 10,-12 ) ) {
+    cout << count << ":";
+    resid.print();
+
+    DD_AVX_SpMV( A,p,q );
+    DD_AVX_SpMV( tA,pp,qq );
+    
+    a_scl = 0.0;
+    b_scl = 0.0;
+    for (int i = 0;i < N; i++) {
+      a_scl.hi += rr.hi[i] * r.hi[i] + rr.hi[i] * r.lo[i] + rr.lo[i] * r.hi[i];
+      a_scl.lo += rr.lo[i] * r.lo[i];
+      b_scl.hi += pp.hi[i] * q.hi[i] + pp.hi[i] * q.lo[i] + pp.lo[i] * q.hi[i];
+      b_scl.lo += pp.lo[i] * q.lo[i];
+    }
+    
+    alpha = (DD_Scalar)a_scl / (DD_Scalar)b_scl;    
  
- b.free();
- x.free();
- p.free();
- pp.free();
- r.free();
- rr.free();
- q.free();
- qq.free();
- return 0;
+    DD_AVX_axpy( alpha,p,x );
+    DD_AVX_axpy( -alpha,q,r );
+    DD_AVX_axpy( -alpha,qq,rr );
+
+    c_scl = 0.0;
+    for (int i = 0;i < N; i++) {
+      c_scl.hi += rr.hi[i] * r.hi[i] + rr.hi[i] * r.lo[i] + rr.lo[i] * r.hi[i];
+      c_scl.lo += rr.lo[i] * r.lo[i];
+    }
+
+    beta =  (DD_Scalar)c_scl / (DD_Scalar)a_scl; 
+
+    DD_AVX_xpay( r,beta,p );
+    DD_AVX_xpay( rr,beta,pp );    
+    
+    r_nrm2 = 0.0;
+    for (int i = 0; i < N; i++) {
+      r_nrm2.hi += (r.hi[i] * r.hi[i]) + 2 * r.hi[i] * r.lo[i] ;
+      r_nrm2.lo += (r.lo[i] * r.lo[i]);
+    }
+
+    r_nrm2 = sqrt( r_nrm2 );
+    resid = (DD_Scalar)r_nrm2 / (DD_Scalar)b_nrm2;
+    count++;
+
+  }
+
+  cout << count << ":" ;
+  resid.print();
+
+  cout << "----------------------------------解ベクトル------------------------------------\n" << endl;
+  //  x.print_all();
+  cout << "--------------------------------------------------------------------------------\n" << endl;
+  
+  A.free();
+  tA.free(); 
+  b.free();
+  x.free();
+  p.free();
+  pp.free();
+  r.free();
+  rr.free();
+  q.free();
+  qq.free();
+
+  return 0;
 }

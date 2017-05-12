@@ -6,9 +6,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+//#include <string>
+//#include <iostream>
 #include <omp.h>
 #include "DD-AVX_Config.hpp"
 #include "DD-AVX_MACRO_Scalar.hpp"
+
+//using std::to_string;
+//using std::cout;
 
 #if USE_AVX==1
 	#include "DD-AVX_MACRO_AVX.hpp"
@@ -109,7 +114,11 @@ class DD_Scalar{
       {}
 
       void print() const {
-	 printf("hi = %1.15e lo = %1.15e\n", hi, lo);
+	printf("hi = %1.15e lo = %1.15e\n", hi, lo);
+	//cout << to_string(hi,"%15.7e");
+	//cout << to_string(lo,"%15.7e");
+	//	printf("hi = %1.15e lo = %.20lf\n", hi, lo);
+	//	printf("hi = %1.15LF lo = %1.15LF\n",hi,lo);
       }
 
       //!binary operator
@@ -238,13 +247,12 @@ class D_Matrix{
 	 : format(0)
       {}
 
-      //D_Matrix operator=(const D_Matrix& D);
-      //D_Matrix copy(D_Matrix D);
+      D_Matrix operator=(const D_Matrix& D);
+      D_Matrix copy(D_Matrix D);
 
-      //void malloc(int n);
-      //void free();
+      void malloc(int n);
+      void free();
 
-      /*
       void print(int row, int col);
       void print_row(int row);
       void print_col(int row);
@@ -258,7 +266,7 @@ class D_Matrix{
 
       void setformat();
       int getformat();
-      */
+      
 
       void input(const char *filename);
       void input_coo(FILE* file);
@@ -377,9 +385,7 @@ extern void DD_AVX_SpMV(D_Matrix A, DD_Vector vx, DD_Vector vy);
 //CRS
 extern void DD_AVX_SpMV_CRS_D(D_Matrix A, D_Vector vx, D_Vector vy);
 extern void DD_AVX_SpMV_CRS_DD(D_Matrix A, DD_Vector vx, DD_Vector vy);
-<<<<<<< HEAD
 extern void DD_AVX_hello(D_Scalar alpha);
-=======
 
 //TSpMV
 extern void DD_AVX_TSpMV(D_Matrix A, D_Vector vx, D_Vector vy);
@@ -390,6 +396,5 @@ extern void DD_AVX_TSpMV(D_Matrix A, DD_Vector vx, DD_Vector vy);
 //T_CRS
 extern void DD_AVX_TSpMV_CRS_D(D_Matrix A, D_Vector vx, D_Vector vy);
 extern void DD_AVX_TSpMV_CRS_DD(D_Matrix A, DD_Vector vx, DD_Vector vy);
->>>>>>> e3fd2837800a6f96737af2c3a92f989eb1bcb275
 
 #endif

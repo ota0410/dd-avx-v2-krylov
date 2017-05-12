@@ -133,17 +133,15 @@ void D_Matrix::input_coo(FILE *file){
 
    for(i=0;i<nnz;i++)
    {
-      if( fgets(buf, 1024, file) == NULL )
+     if( fgets(buf, 1024, file) == NULL )
       {
-<<<<<<< HEAD
 	 printf("can't read data, [row col value]\n");
 	 printf("bar\n");
 	 abort();
-=======
+
 	 printf("DD-AVX system: cant read data, [row col value]\n"); abort();
->>>>>>> 2902bc355448801dc29777471afae55477b86693
       }
-      if( sscanf(buf,"%d %d %lf",&idx, &jdx, &value) != 3 )
+     if( sscanf(buf,"%d %d %lf",&idx, &jdx, &value) != 3 )
       {
 	 printf("DD-AVX system: not data, [col=%d,row=%d,val=%f]\n",idx,jdx,value); abort();
       }
@@ -168,11 +166,9 @@ void D_Matrix::input_crs(FILE* file){
 
 	for(i=0;i<nnz;i++)
 	{
-<<<<<<< HEAD
 	  if( fgets(buf, 1024, file) == NULL )
 	    {
 	      printf("can't read data, [row col value]\n");
-	      printf("hoge\n");
 	      abort();
 	    }
 	  
@@ -207,8 +203,7 @@ void D_Matrix::input_crs(FILE* file){
 	for(j=0;j<nnz;j++)
 	  printf("%d  %d\n",j,val[j]);
 	printf("---------------------------------val----------------------------\n");
-	*/
-=======
+	
 		if( fgets(buf, 1024, file) == NULL )
 		{
 			printf("DD-AVX system: cant read data, [row col value]\n");
@@ -230,7 +225,6 @@ void D_Matrix::input_crs(FILE* file){
 
 		col[i] = idx-1;
 		val[i] = value;
-	}
-	row[N] = nnz;
->>>>>>> 2902bc355448801dc29777471afae55477b86693
+
+		row[N] = nnz;*/
 }

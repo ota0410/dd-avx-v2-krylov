@@ -163,7 +163,6 @@ void DD_AVX_TSpMV_CRS_D(D_Matrix A, D_Vector vx, D_Vector vy)
    for(i=0;i<n;i++){
       y[i] = 0;
    }
-
    nprocs = omp_get_max_threads();
    double* w = (double *)malloc( nprocs*np*sizeof(double));
 #pragma omp parallel private(i,j,js,je,t,jj,k)
@@ -183,7 +182,7 @@ void DD_AVX_TSpMV_CRS_D(D_Matrix A, D_Vector vx, D_Vector vy)
 		   for(j=js;j<je;j++)
 		   {
 			   jj  = k*np+A.index[j];
-			   w[jj] += A.val[j] * t;
+			   w[jj] += A.val[j] * t; 
 		   }
 	   }
 #pragma omp for 

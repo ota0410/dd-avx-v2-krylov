@@ -1,72 +1,55 @@
-/* Copyright (C) T.Hishinuma, All rights reserved.*/
-/* 2016/12/06*/
-#include "../include/DD-AVX.hpp"
+#include <stdio.h>
 #include <iostream>
+#include <math.h>
+#include <DD-AVX.hpp>
 
-int main(int argc, char* argv[])
-{
-   char filename1[256] = {'\0'};
-   //   char filename2[256] = {'\0'};
+//N=12までは正常に作動します
+#define N 13
 
-   sprintf(filename1, "%s",argv[1] );
-   //  sprintf(filename2, "%s",argv[2] );
+int main(){
 
-   DD_AVX_version();
+  D_Vector x;
+  D_Vector y;
+  DD_Vector u;
+  DD_Vector v;
 
-   D_Scalar da = 1.0, db = 2.0, dc = 3.0;
-   DD_Scalar a = 4, b = 5, c = 6;
-   
-   D_Matrix A/*B*/;
-   A.format = 1;/*crs*/
-   //  B.format = 1;
-   A.input(filename1);
-   //  B.input(filename2);
-   
-   DD_Vector x,y;/*宣言のちmalloc*/
+  D_Scalar alpha;
+  DD_Scalar beta;
+  DD_Scalar div;
+  DD_Scalar a;
+  DD_Scalar b;
+  DD_Scalar c;
+  DD_Scalar d;
+  
+  x.malloc( N );
+  y.malloc( N );
+  u.malloc( N );
+  v.malloc( N );
 
-   x.malloc(A.N); /*vectorを行列の大きさ分領域確保*/
-   x.broadcast(1.41421356); /*全要素を1で初期化*/
-   y.malloc(A.N);
-   y.broadcast(0);
+  x.broadcast(3);//D_vector
+  y.broadcast(3);//D_vector
 
-   DD_AVX_axpy(a, x, y);
-<<<<<<< HEAD
-   y.print_all();
-   std::cout << "------------------------------------------------" << std::endl;
-   DD_AVX_SpMV(A, x ,y);
-   // DD_AVX_SpMV(B, x ,y);
-   //   DD_AVX_scale(a,x);
-   //   a.dot(x,y);
-   //   da.dot(x,y);
-   //   std::cout << da.dot(x,y) << std::endl;
-   //   A.getsize();
-   //   A.print_all();
-   y.print_all();
-   std::cout << "------------------------------------------------" << std::endl;
-   // a.print();
-   // b.print();
-   x.print_all();
-   std::cout << "-----------------------------------------------" << std::endl;
-   y.print_all();
-   std::cout << "-----------------------------------------------" << std::endl;
-   A.print_all();/*行->列->値の順番*/
-   // std::cout << "-----------------------------------------------" << std::endl;
-   //A.getsize();
-   //   std::cout << A.N << std::endl;
-   da.hello( da );
-   //   std::cout << da << std::endl;
-=======
-   DD_AVX_SpMV(A, x, y);
-   DD_AVX_TSpMV(A, x, y);
-   a.dot(x,y);
-   da.dot(x,y);
-//   y.print_all();
-   a.print();
+  u.broadcast(3);//DD_vector
+  v.broadcast(3);//DD_vector
 
->>>>>>> e3fd2837800a6f96737af2c3a92f989eb1bcb275
-   a = (double)1;
-   a = da = 1.0;
+  alpha.dot(x,y);//D_Scalar
+  beta.dot(u,v); //DD_Scalar
 
-   b = a * da + b / dc + (a + b)/da + (da-db);
-   //b.print();
+  std::cout << "Dot" << std::endl;
+  std::cout << "D:";
+  alpha.print();
+  std::cout << "DD: ";
+  beta.print();
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "nrm2" << std::endl;
+  DD_AVX_nrm2(x,&alpha);
+  DD_AVX_nrm2(v,&beta);
+  std::cout << "D: ";
+  alpha.print();
+  std::cout << "DD: ";
+  beta.print();
+
+
+  return 0;
+  
 }

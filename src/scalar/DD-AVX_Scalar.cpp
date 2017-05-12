@@ -346,7 +346,7 @@ DD_Scalar DD_Scalar::operator/(DD_Scalar rhv) {
 #endif
 
    DD_Scalar r;
-   DD_AVX_DIV(r.hi, r.lo, this->hi, this->lo, rhv.hi,rhv.lo);
+   DD_AVX_DIV(r.hi, r.lo, this->hi, this->lo, rhv.hi,rhv.lo);//おかしい
    return r;
 }
 
@@ -371,7 +371,7 @@ DD_Scalar::operator double() {
 
 void D_Scalar::hello( D_Scalar alpha ){
 #ifdef ddavx_debug
-  printf("hello %f\n",alpha);
+  printf("hello\n");
 #endif
-  printf("hello %f\n",alpha);
+  printf("hello\n");
 }

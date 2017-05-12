@@ -4,7 +4,7 @@
 #include <DD-AVX.hpp>
 
 //N=12までは正常に作動します
-#define N 13
+#define N 12
 
 int main(){
 

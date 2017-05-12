@@ -46,9 +46,9 @@ D_Scalar D_Scalar::operator+(double rhv) {
 #ifdef ddavx_debug
    printf("[D  ] D_Scalar D_Scalar::operator+(double)\n");
 #endif
-
-   this->hi = this->hi + rhv;
-   return *this;
+   D_Scalar tmp;
+   tmp.hi = this->hi + rhv;
+   return tmp;
 }
 
 D_Scalar D_Scalar::operator+(D_Scalar rhv) {
@@ -56,8 +56,9 @@ D_Scalar D_Scalar::operator+(D_Scalar rhv) {
    printf("[D  ] D_Scalar D_Scalar::operator+(D)\n");
 #endif
 
-   this->hi = this->hi + rhv.hi;
-   return *this;
+   D_Scalar tmp;
+   tmp.hi = this->hi + rhv.hi;
+   return tmp;
 }
 
 DD_Scalar D_Scalar::operator+(DD_Scalar rhv) {
@@ -76,8 +77,9 @@ D_Scalar D_Scalar::operator-(double rhv) {
    printf("[D  ] D_Scalar D_Scalar::operator-(Double)\n");
 #endif
 
-   this->hi = this->hi - rhv;
-   return *this;
+   D_Scalar tmp;
+   tmp.hi = this->hi - rhv;
+   return tmp;
 }
 
 D_Scalar D_Scalar::operator-(D_Scalar rhv) {
@@ -85,8 +87,9 @@ D_Scalar D_Scalar::operator-(D_Scalar rhv) {
    printf("[D  ] D_Scalar D_Scalar::operator-(D)\n");
 #endif
 
-   this->hi = this->hi - rhv.hi;
-   return *this;
+   D_Scalar tmp;
+   tmp.hi = this->hi - rhv.hi;
+   return tmp;
 }
 
 DD_Scalar D_Scalar::operator-(DD_Scalar rhv) {
@@ -106,8 +109,9 @@ D_Scalar D_Scalar::operator*(double rhv) {
    printf("[D  ] D_Scalar D_Scalar::operator*(double)\n");
 #endif
 
-   this->hi = this->hi * rhv;
-   return *this;
+   D_Scalar tmp;
+   tmp.hi = this->hi * rhv;
+   return tmp;
 }
 
 D_Scalar D_Scalar::operator*(D_Scalar rhv) {
@@ -115,8 +119,9 @@ D_Scalar D_Scalar::operator*(D_Scalar rhv) {
    printf("[D  ] D_Scalar D_Scalar::operator*(D)\n");
 #endif
 
-   this->hi = this->hi * rhv.hi;
-   return *this;
+   D_Scalar tmp;
+   tmp.hi = this->hi * rhv.hi;
+   return tmp;
 }
 
 DD_Scalar D_Scalar::operator*(DD_Scalar rhv) {
@@ -135,8 +140,9 @@ D_Scalar D_Scalar::operator/(double rhv) {
    printf("[D  ] D_Scalar D_Scalar::operator/(double)\n");
 #endif
 
-   this->hi = this->hi / rhv;
-   return *this;
+   D_Scalar tmp;
+   tmp.hi = this->hi / rhv;
+   return tmp;
 }
 
 D_Scalar D_Scalar::operator/(D_Scalar rhv) {
@@ -144,8 +150,9 @@ D_Scalar D_Scalar::operator/(D_Scalar rhv) {
    printf("[D  ] D_Scalar D_Scalar::operator/(D)\n");
 #endif
 
-   this->hi = this->hi / rhv.hi;
-   return *this;
+   D_Scalar tmp;
+   tmp.hi = this->hi / rhv.hi;
+   return tmp;
 }
 
 DD_Scalar D_Scalar::operator/(DD_Scalar rhv) {

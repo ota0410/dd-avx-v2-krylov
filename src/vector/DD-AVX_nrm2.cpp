@@ -152,15 +152,13 @@ void DD_AVX_nrm2_DD(DD_Vector vx, DD_Scalar* val){
       {
 	 DD_AVX_FMAN_AVX(a[0],a[4],a[0],a[4],x[i],xl[i],x[i],xl[i]);
       }
-      DD_AVX_ADD_SSE2(a[0], a[4], a[0], a[4], a[0], a[4]);
-      DD_AVX_ADD_SSE2(a[0], a[4], a[1], a[5], a[1], a[5]);
-      DD_AVX_ADD_SSE2(a[0], a[4], a[2], a[6], a[2], a[6]);
-      DD_AVX_ADD_SSE2(a[0], a[4], a[3], a[7], a[3], a[7]);
+
       for(;i<ie;i++)
       {
 	 DD_AVX_FMA_SSE2(a[0],a[4],a[0],a[4],x[i],xl[i],x[i],xl[i]);
       }
 
+	  DD_AVX_HADDALL_AVX(a[0],a[4],a[0],a[4]);
       for(j=0;j<8;j++){
 	 gtavx[my_rank*8+j]=a[j];
       }

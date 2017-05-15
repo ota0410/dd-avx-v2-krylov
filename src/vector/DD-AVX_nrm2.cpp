@@ -197,9 +197,9 @@ void DD_AVX_nrm2_DD(DD_Vector vx, DD_Scalar* val){
    for(i=0;i<nprocs;i++)
    {
 #ifdef USE_AVX
-      DD_AVX_ADD_SSE2(dotm.hi,dotm.lo,dotm.hi,dotm.lo,gtavx[i*8],gtavx[i*8+4]);
+     DD_AVX_ADD_SSE2(dotm.hi,dotm.lo,dotm.hi,dotm.lo,gtavx[i*8],gtavx[i*8+4]);
 #else
-      DD_AVX_ADD_SSE2(dotm.hi,dotm.lo,dotm.hi,dotm.lo,gt[i*2],gt[i*2+1]);
+     DD_AVX_ADD_SSE2(dotm.hi,dotm.lo,dotm.hi,dotm.lo,gt[i*2],gt[i*2+1]);
 #endif	
    }
 #ifndef USE_SSE2

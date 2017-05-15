@@ -4,7 +4,7 @@
 #include <DD-AVX.hpp>
 
 //N=12までは正常に作動します
-#define N 12
+#define N 13
 
 int main(){
 
@@ -15,14 +15,10 @@ int main(){
 
   D_Scalar alpha;
   DD_Scalar beta;
-  DD_Scalar div;
-  DD_Scalar a;
-  DD_Scalar b;
-  DD_Scalar c;
-  DD_Scalar d;
   
   x.malloc( N );
   y.malloc( N );
+
   u.malloc( N );
   v.malloc( N );
 
@@ -48,7 +44,6 @@ int main(){
   alpha.print();
   std::cout << "DD: ";
   beta.print();
-
 
   return 0;
   

@@ -31,7 +31,6 @@ int main( int argc, char* argv[] )
   DD_Vector pp;
   DD_Vector q;
   DD_Vector qq;
-  //  __float128 r_nrm2;
 
   init.malloc( N );
   b.malloc( N );
@@ -52,7 +51,6 @@ int main( int argc, char* argv[] )
   DD_Scalar c_scl;
   DD_Scalar alpha;
   DD_Scalar beta;
-  //  D_Scalar param;
 
   srand( ( unsigned )time( NULL ) );
   
@@ -95,16 +93,10 @@ int main( int argc, char* argv[] )
     b_nrm2.lo += (b.lo[i] * b.lo[i]);
   }
 
-  //  r.print_all();
-  //  DD_AVX_nrm2(r,&r_nrm2);
-  // r_nrm2.print();
-
   r_nrm2 = sqrt( r_nrm2 );
   b_nrm2 = sqrt( b_nrm2 );
 
   resid = (DD_Scalar)r_nrm2 / (DD_Scalar)b_nrm2 ;
-  //  D_Scalar z = r_nrm2.hi / b_nrm2.hi;
-  // z.print();
 
   cout << "---------------------------------相対残差--------------------------------------\n" << endl;
 
@@ -158,7 +150,7 @@ int main( int argc, char* argv[] )
   resid.print();
 
   cout << "----------------------------------解ベクトル------------------------------------\n" << endl;
-  //  x.print_all();
+  x.print_all();
   cout << "--------------------------------------------------------------------------------\n" << endl;
   
   A.free();

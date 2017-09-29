@@ -62,6 +62,7 @@ D_Scalar D_Scalar::nrm2(DD_Vector vx){
 #ifdef ddavx_debug
    printf("D scalar = nrm2(DD vector)\n");
 #endif
+   this->hi = 0.0;
    DD_Scalar tval;
    DD_AVX_nrm2_DD(DD(vx), &tval);
    this->hi = tval.hi;

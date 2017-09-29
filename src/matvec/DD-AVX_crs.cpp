@@ -2,6 +2,7 @@
 #include<DD-AVX.hpp>
 #include<stdio.h>
 #include<string.h>
+#include <immintrin.h>
 
 void DD_AVX_SpMV_CRS_D(D_Matrix A, D_Vector vx, D_Vector vy)
 {
@@ -11,6 +12,7 @@ void DD_AVX_SpMV_CRS_D(D_Matrix A, D_Vector vx, D_Vector vy)
    int i,j,n,is,ie,nprocs,my_rank;
    DD_AVX_DECLAR;
    double *x,*y;
+   double k;
 
    n   = vx.N;
    x   = vx.hi;
@@ -20,11 +22,13 @@ void DD_AVX_SpMV_CRS_D(D_Matrix A, D_Vector vx, D_Vector vy)
       y[i] = 0;
    }
 
-#pragma omp parallel for private(j)
-   for(i=0; i<n; i++){
-      for(j=A.row[i];j<A.row[i+1];j++){
-	 y[i] += A.val[j] * x[A.col[j]];
-      }
+#pragma omp parallel for private(j,k)
+   for(i=0;i<n;i++){
+     k = y[i];
+     for(j=A.row[i];j<A.row[i+1];j++){
+       k += A.val[j] * x[A.col[j]];
+     }
+     y[i] = k;
    }
 }
 
@@ -50,7 +54,7 @@ void DD_AVX_SpMV_CRS_DD(D_Matrix A, DD_Vector vx, DD_Vector vy)
    n     = A.N;
    x     = vx.hi;
    y     = vy.hi;
-   xl    = vy.lo;
+   xl    = vx.lo;
    yl    = vy.lo;
    //mp3_matvec
    jj0 = A.col;
@@ -61,8 +65,9 @@ void DD_AVX_SpMV_CRS_DD(D_Matrix A, DD_Vector vx, DD_Vector vy)
 #elif defined(USE_SSE2)
 #pragma omp parallel for schedule(guided) private(j,is,ie,j0,j1,tt,bh,ch,sh,wh,th,bl,cl,sl,wl,tl,p1,p2,t0,t1,t2,eh)
 #else
-#pragma omp parallel for schedule(guided)  private(j,is,ie,j0,j1,tt,p1,p2,tq,bhi,blo,chi,clo,sh,sl,th,tl,eh,el)
+#pragma omp parallel for schedule(guided) private(j,is,ie,j0,j1,tt,p1,p2,tq,bhi,blo,chi,clo,sh,sl,th,tl,eh,el)
 #endif
+
    for(i=0;i<n+1;i++)
    {
 #if defined(USE_AVX)
@@ -133,8 +138,8 @@ void DD_AVX_SpMV_CRS_DD(D_Matrix A, DD_Vector vx, DD_Vector vy)
 	 DD_AVX_QUAD_FMAD_SSE2(y[i],yl[i],y[i],yl[i],x[j0],xl[j0],vv0[j]);
 #endif
       }
-#else
-#error no implementation
+      #else
+      #error no implementation
 #endif
    }
 
@@ -145,58 +150,30 @@ void DD_AVX_SpMV_CRS_DD(D_Matrix A, DD_Vector vx, DD_Vector vy)
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
 
-
 void DD_AVX_TSpMV_CRS_D(D_Matrix A, D_Vector vx, D_Vector vy)
 {
 #ifdef ddavx_debug
    printf("\tcompute CRS SpMV in double\n");
 #endif
-   int i,j,n,is,ie,nprocs,my_rank,k,np;
-   int js, je, t,jj;
+   int i,j,n,is,ie,nprocs,my_rank;
    DD_AVX_DECLAR;
    double *x,*y;
+   double k;
 
    n   = vx.N;
    x   = vx.hi;
    y   = vy.hi;
-#pragma omp parallel for 
+#pragma omp parallel for
    for(i=0;i<n;i++){
       y[i] = 0;
    }
-   nprocs = omp_get_max_threads();
-   double* w = (double *)malloc( nprocs*np*sizeof(double));
-#pragma omp parallel private(i,j,js,je,t,jj,k)
-   {
-	   k = omp_get_thread_num();
-#pragma omp for
-	   for(j=0;j<nprocs;j++)
-	   {
-		   memset( &w[j*np], 0, np*sizeof(double) );
-	   }
-#pragma omp for 
-	   for(i=0; i<n; i++)
-	   {
-		   js = A.ptr[i];
-		   je = A.ptr[i+1];
-		   t = x[i];
-		   for(j=js;j<je;j++)
-		   {
-			   jj  = k*np+A.index[j];
-			   w[jj] += A.val[j] * t; 
-		   }
-	   }
-#pragma omp for 
-	   for(i=0;i<np;i++)
-	   {
-		   t = 0.0;
-		   for(j=0;j<nprocs;j++)
-		   {
-			   t += w[j*np+i];
-		   }
-		   y[i] = t;
-	   }
+
+   for(i=0;i<n;i++){
+     k = x[i];
+     for(j=A.row[i];j<A.row[i+1];j++){
+       y[A.col[j]] += A.val[j] * k;
+     }
    }
-   free(w);
 }
 
 void DD_AVX_TSpMV_CRS_DD(D_Matrix A, DD_Vector vx, DD_Vector vy)
@@ -221,27 +198,28 @@ void DD_AVX_TSpMV_CRS_DD(D_Matrix A, DD_Vector vx, DD_Vector vy)
    n     = A.N;
    x     = vx.hi;
    y     = vy.hi;
-   xl    = vy.lo;
+   xl    = vx.lo;
    yl    = vy.lo;
    //mp3_matvec
    jj0 = A.col;
    vv0 = A.val;
-
+   
 #if defined(USE_AVX)
-#pragma omp parallel for schedule(guided) private(j,is,ie,j0,j1,j2,j3,bh,ch,sh,wh,th,bl,cl,sl,wl,tl,p1,p2,t0,t1,t2,eh,t3,tt_hi,tt_lo,s_hi,s_lo)
+#pragma omp parallel for schedule(guided) private(j,is,ie,j0,j1,j2,j3,bh,ch,sh,wh,th,bl,cl,sl,wl,tl,p1,p2,t0,t1,t2,eh,t3,tt_hi,tt_lo,s_hi,s_lo) 
 #elif defined(USE_SSE2)
 #pragma omp parallel for schedule(guided) private(j,is,ie,j0,j1,tt,bh,ch,sh,wh,th,bl,cl,sl,wl,tl,p1,p2,t0,t1,t2,eh)
 #else
 #pragma omp parallel for schedule(guided)  private(j,is,ie,j0,j1,tt,p1,p2,tq,bhi,blo,chi,clo,sh,sl,th,tl,eh,el)
 #endif
-   for(i=0;i<n;i++)
+  
+   for(i=0;i<n+1;i++)
    {
 #if defined(USE_AVX)
       DD_AVX_AVX_TYPE tt_hi = DD_AVX_AVX_FUNC(setzero_pd)();
       DD_AVX_AVX_TYPE tt_lo = DD_AVX_AVX_FUNC(setzero_pd)();
 
-      is = A.ptr[i];
-      ie = A.ptr[i+1];
+      is = A.row[i];
+      ie = A.row[i+1];
       for(j=is;j<ie-(DD_AVX_AVX_SIZE-1);j+=DD_AVX_AVX_SIZE)
       {
 	      

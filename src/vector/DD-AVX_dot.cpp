@@ -94,6 +94,7 @@ D_Scalar D_Scalar::dot(D_Vector vx, D_Vector vy){
 #ifdef ddavx_debug
    printf("D scalar = dot(D vector, D vector)\n");
 #endif
+   this->hi = 0.0;
    D_Scalar tval;
    DD_AVX_dot_D(vx,vy, &tval);
    this->hi = tval.hi;
@@ -197,11 +198,9 @@ void DD_AVX_dot_D(D_Vector vx, D_Vector vy, D_Scalar *val){
    y = vy.hi;
    dot = val->hi;
 
-#pragma omp parallel for reduction(+: dot)
-      for(i=0; i<n; i++)
-      {
-	 dot += x[i] * y[i];
-      }
+#pragma omp parallel for reduction(+:dot)
+   for(i=0; i<n; i++)
+     dot += x[i] * y[i];
    val->hi = dot;
 }
 

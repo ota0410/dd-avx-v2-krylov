@@ -859,8 +859,6 @@
 	DD_AVX_VEC_CAST(cl) = _mm_unpackhi_pd(DD_AVX_VEC_CAST(wh), DD_AVX_VEC_CAST(wh)); \
 	DD_AVX_ADD_SSE2_CORE((a_hi), (a_lo));
 
-
-
 #define DD_AVX_ADD_SSE2_CORE(a_hi,a_lo) \
 	DD_AVX_VEC_CAST(t0) = _mm_add_pd(DD_AVX_VEC_CAST(bl),DD_AVX_VEC_CAST(sh)); \
 	DD_AVX_VEC_CAST(eh) = _mm_sub_pd(DD_AVX_VEC_CAST(t0),DD_AVX_VEC_CAST(bl)); \

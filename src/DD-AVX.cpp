@@ -173,7 +173,7 @@ void D_Vector::print(int n){
 #ifdef ddavx_debug
 	 printf("D_vector::print()\n");
 #endif
-   printf("%e\n", hi[n]);
+   printf("%1.15e\n", hi[n]);
 }
 
 void D_Vector::print_all(){
@@ -181,7 +181,7 @@ void D_Vector::print_all(){
 	 printf("D_vector::print_all()\n");
 #endif
    for(int i=0;i<N;i++){
-   	printf("%e\n", hi[i]);
+   	printf("%1.15e\n", hi[i]);
    }
 }
 
@@ -302,11 +302,31 @@ DD_Vector DD_Vector::copy(DD_Vector DD) {
    return *this;
 }
 
+//add function
+DD_Scalar DD_Vector::getelm(int n){
+#ifdef ddavx_debug
+  printf("DD_Vector::getelm\n");
+#endif
+  DD_Scalar num;
+  num.hi = this->hi[n];
+  num.lo = this->lo[n];
+  return num;
+}
+
+DD_Vector DD_Vector::chgelm(DD_Scalar val,int n){
+#ifdef ddavx_debug
+  printf("DD_Vector::chgelm\n");
+#endif
+  this->hi[n] = val.hi;
+  this->lo[n] = val.lo;
+  return *this;
+}
+
 void DD_Vector::print(int n){
 #ifdef ddavx_debug
 	 printf("DD_Vector::print()\n");
 #endif
-   printf("hi = %e lo = %e\n", hi[n], lo[n]);
+   printf("hi = %1.15e lo = %1.15e\n", hi[n], lo[n]);
 }
 
 void DD_Vector::print_all(){
@@ -314,7 +334,7 @@ void DD_Vector::print_all(){
 	 printf("DD_Vector::print_all()\n");
 #endif
    for(int i=0;i<N;i++){
-   	printf("hi = %e lo = %e\n", hi[i], lo[i]);
+   	printf("hi = %1.15e lo = %1.15e\n", hi[i], lo[i]);
    }
 }
 
@@ -376,7 +396,66 @@ void DD_Vector::broadcast(DD_Scalar val){
 
 ///////////// D_Matrix ////////////////
 // input and output functions are written in System.c
+D_Matrix D_Matrix::operator=(const D_Matrix& D) {
+  
+#ifdef ddavx_debug
+   printf("D_Matrix::operator=D_Matrix\n");
+#endif
+   if(this->N != D.N){
+      printf("error DD.N != D.N in cast operator");
+      abort();
+   }
+#pragma omp parallel for
+   for(int i=0; i< D.nnz; i++){
+      this->val[i] = D.val[i];
+      this->col[i] = D.col[i];
+      this->row[i] = D.row[i];
+   }
+   this->nnz = D.nnz;
+
+   return *this;  
+}
+
+int D_Matrix::getsize(){
+#ifdef ddavx_debug
+	 printf("D_Matrix::print_all()\n");
+#endif
+   return N;
+}
+
 void D_Matrix::print_all(){
+#ifdef ddavx_debug
+	 printf("D_Matrix::print_all()\n");
+#endif
+   int count = 0;
+   for(int i=0;i<nnz;i++){
+     if(row[count+1] <= i)
+       count++;
+     printf("%d\t%d\t%1.15e\n",count,col[i],val[i]);
+   }
+}
+
+void D_Matrix::malloc( int n ){
+  N = n;
+  nnz = 0;
+  val = new double[n*n];
+  col = new int[n*n];
+  row = new int[n*n];
+  ptr = new int[n*n];
+  col[0] = 0;
+}
+
+void D_Matrix::free(){
+#ifdef ddavx_debug
+     printf("D_Matrix::free()\n");
+#endif
+     delete row;
+     delete val;
+     delete col;
+}
+
+///////////////////////DD_Matrix//////////////////////
+void DD_Matrix::print_all(){
 #ifdef ddavx_debug
 	 printf("DD_Matrix::print_all()\n");
 #endif
@@ -384,15 +463,40 @@ void D_Matrix::print_all(){
    for(int i=0;i<nnz;i++){
      if(row[count+1] <= i)
        count++;
-     printf("%d\t%d\t%e\n",count,col[i],val[i]);
+     printf("%d\t%d\thi=%1.15e\tlo=%1.15e\n",count,col[i],val.hi[i],val.lo[i]);
    }
 }
 
-void D_Matrix::free(){
+void DD_Matrix::malloc( int n ){
+  N = n;
+  nnz = 0;
+  val.malloc( n );
+  col = new int[n*n];
+  row = new int[n*n];
+  ptr = new int[n*n];
+  col[0] = 0;
+}
+
+DD_Matrix DD_Matrix::operator=(const DD_Matrix& DD) {
+  
 #ifdef ddavx_debug
-     printf("DD_Matrix::free()\n");
+   printf("D_Matrix::operator=D_Matrix\n");
 #endif
-     delete row;
-     delete val;
-     delete col;
+   if(this->N != DD.N){
+      printf("error DD.N != D.N in cast operator");
+      abort();
+   }
+#pragma omp parallel for
+
+   //   this->N = D.N;
+   //   this->nnz = D.nnz;
+   for(int i=0; i< DD.nnz; i++){
+      this->val.hi[i] = DD.val.hi[i];
+      this->val.lo[i] = DD.val.lo[i];
+      this->col[i] = DD.col[i];
+      this->row[i] = DD.row[i];
+   }
+   this->nnz = DD.nnz;
+
+   return *this;  
 }

@@ -1,25 +1,48 @@
 #include <DD-AVX.hpp>
-#include <time.h>
 #include <iostream>
-#include <quadmath.h>
+#include <omp.h>
 
 using std::cout;
 using std::endl;
 
-#define N A.N
+#define TOL 1.0e-10
+#define MAXITR A.N
+#define SOLVE 0
 
-int main( int argc, char* argv[] )
+DD_Vector TSpMV( D_Matrix A,DD_Vector x, DD_Vector y )
 {
+  int i,j;
+  DD_Scalar k;
+  DD_Scalar temp;
+  y.broadcast( 0.0 );
+  int size = x.getsize();
+  for (i = 0 ; i < size; i++) {
+    for (j = A.row[i]; j < A.row[i+1]; j++){
+      temp = y.getelm( A.col[j] ) + A.val[j] * x.getelm( i );
+      y.chgelm(  temp, A.col[j] );
+    }
+  }
+  return y;
+}
 
-  char filename1[256] = {'\0'};/*元の行列*/
-  char filename2[256] = {'\0'};/*転置行列*/
+DD_Vector SpMV( D_Matrix A,DD_Vector x, DD_Vector y ) 
+{
+  int i,j;
+  DD_Scalar k;
+  DD_Scalar temp;
+  int size = x.getsize();
+  y.broadcast( 0.0 );
+  for (i = 0; i < size; i++) {
+    temp = 0.0;
+    for (j = A.row[i]; j < A.row[i+1]; j++){
+      temp = temp + A.val[j] * x.getelm( A.col[j] );
+    }
+    y.chgelm( temp,i );
+  }
+  return y;
+}
 
-  sprintf( filename1, "%s",argv[1] );
-  sprintf( filename2, "%s",argv[2] );
- 
-  D_Matrix A,tA;
-  A.input( filename1 );
-  tA.input( filename2 );
+void bicg( D_Matrix A ) {  
 
   DD_Vector b;
   DD_Vector init;
@@ -32,129 +55,114 @@ int main( int argc, char* argv[] )
   DD_Vector q;
   DD_Vector qq;
 
-  init.malloc( N );
-  b.malloc( N );
-  r.malloc( N );
-  rr.malloc( N );
-  x.malloc( N );
-  y.malloc( N );
-  p.malloc( N );
-  pp.malloc( N );
-  q.malloc( N );
-  qq.malloc( N );
+  init.malloc( A.N );
+  b.malloc( A.N );
+  r.malloc( A.N );
+  rr.malloc( A.N );
+  x.malloc( A.N );
+  y.malloc( A.N );
+  p.malloc( A.N );
+  pp.malloc( A.N );
+  q.malloc( A.N );
+  qq.malloc( A.N );
 
-  DD_Scalar b_nrm2;
-  DD_Scalar resid;
-  DD_Scalar r_nrm2;
+  //D_Scalar
+  D_Scalar resid;
+  D_Scalar b_nrm2;
+  D_Scalar r_nrm2;
+ 
+  //DD_Scalar
   DD_Scalar a_scl;
   DD_Scalar b_scl;
   DD_Scalar c_scl;
   DD_Scalar alpha;
   DD_Scalar beta;
 
-  srand( ( unsigned )time( NULL ) );
+  x.broadcast( 0.0 );
   
-  for (int i = 0; i < N ; i++) {
-    x.hi[i] = ( DD_Scalar )( rand() % 10 + 2 );
-    x.lo[i] = 0.0;
+  init.broadcast( 0.0 );
+  srand((unsigned)time(NULL));
+  for (int i = 0; i < A.N; i++) 
+    init.hi[i] = (double)rand()/(double)RAND_MAX;
+  
+  //  init.broadcast( 1.0 );
+  /*  
+  for (int i = 0; i < A.N; i++){
+    init.hi[i] = 1.0 * pow(-1.0,i+1);
+    //  init.lo[i] = 0.0;
   }
+  */
   
-  init.broadcast( 1 );
-  b.broadcast( 0 );
-  r.broadcast( 0 );
-  rr.broadcast( 0 );
-  p.broadcast( 0 );
-  pp.broadcast( 0 );
-  q.broadcast( 0 );
-  qq.broadcast( 0 );
-  y.broadcast( 0 );
+  r.broadcast( 0.0 );
+  p.broadcast( 0.0 );
+  pp.broadcast( 0.0 );
+  q.broadcast( 0.0 );
+  qq.broadcast( 0.0 );
 
-  DD_AVX_SpMV( A,x,y );
-  DD_AVX_SpMV( A,init,b );
-  init.free();
+  SpMV( A,x,y );
+  SpMV( A,init,b );
 
-  DD_AVX_xpay( b,( DD_Scalar )(-1.0),y );
+  DD_AVX_xpay( b,( D_Scalar )(-1.0),y );
   r.copy( y );
-  y.free();
-
-  for (int i = 0; i < N; i++) {
-    rr.hi[i] = ( DD_Scalar )( rand() % 10 + 2 );
-    rr.lo[i] = 0.0;
-    r.lo[i] = 0.0;
-  }
-
+  rr.copy( r );
   p.copy( r );
   pp.copy( rr );
- 
-  for (int i = 0; i < N; i++) {
-    r_nrm2.hi += (r.hi[i] * r.hi[i]) + 2 * r.hi[i] * r.lo[i];
-    r_nrm2.lo += (r.lo[i] * r.lo[i]);
-    b_nrm2.hi += (b.hi[i] * b.hi[i]) + 2 * b.hi[i] * b.lo[i];
-    b_nrm2.lo += (b.lo[i] * b.lo[i]);
-  }
 
-  r_nrm2 = sqrt( r_nrm2 );
-  b_nrm2 = sqrt( b_nrm2 );
-
-  resid = (DD_Scalar)r_nrm2 / (DD_Scalar)b_nrm2 ;
-
-  cout << "---------------------------------相対残差--------------------------------------\n" << endl;
+  DD_AVX_nrm2( r,&r_nrm2 );
+  DD_AVX_nrm2( b,&b_nrm2 );
+  b_nrm2 = (DD_Scalar)1.0 / b_nrm2;
+  resid = r_nrm2 * b_nrm2 ;
 
   int count = 1;
-  while ( resid > pow( 10,-12 ) ) {
-    cout << count << ":";
+  while ( resid > TOL ) {
     resid.print();
 
-    DD_AVX_SpMV( A,p,q );
-    DD_AVX_SpMV( tA,pp,qq );
+    SpMV( A,p,q );
+    TSpMV( A,pp,qq ); 
+
+    a_scl.dot( rr,r );
+    b_scl.dot( pp,q );
     
-    a_scl = 0.0;
-    b_scl = 0.0;
-    for (int i = 0;i < N; i++) {
-      a_scl.hi += rr.hi[i] * r.hi[i] + rr.hi[i] * r.lo[i] + rr.lo[i] * r.hi[i];
-      a_scl.lo += rr.lo[i] * r.lo[i];
-      b_scl.hi += pp.hi[i] * q.hi[i] + pp.hi[i] * q.lo[i] + pp.lo[i] * q.hi[i];
-      b_scl.lo += pp.lo[i] * q.lo[i];
+    if ( count > MAXITR ) {
+      cout << "\n%BiCGは与えられた許容誤差に収束しませんでした" << endl;
+      cout << "%最後の相対残差は\n" << endl;
+      break;
     }
     
-    alpha = (DD_Scalar)a_scl / (DD_Scalar)b_scl;    
- 
+    alpha = a_scl / b_scl ;
+
     DD_AVX_axpy( alpha,p,x );
     DD_AVX_axpy( -alpha,q,r );
     DD_AVX_axpy( -alpha,qq,rr );
 
-    c_scl = 0.0;
-    for (int i = 0;i < N; i++) {
-      c_scl.hi += rr.hi[i] * r.hi[i] + rr.hi[i] * r.lo[i] + rr.lo[i] * r.hi[i];
-      c_scl.lo += rr.lo[i] * r.lo[i];
-    }
-
-    beta =  (DD_Scalar)c_scl / (DD_Scalar)a_scl; 
+    c_scl.dot( rr,r );
+    beta = c_scl / a_scl ;
 
     DD_AVX_xpay( r,beta,p );
-    DD_AVX_xpay( rr,beta,pp );    
-    
-    r_nrm2 = 0.0;
-    for (int i = 0; i < N; i++) {
-      r_nrm2.hi += (r.hi[i] * r.hi[i]) + 2 * r.hi[i] * r.lo[i] ;
-      r_nrm2.lo += (r.lo[i] * r.lo[i]);
-    }
+    DD_AVX_xpay( rr,beta,pp );
 
-    r_nrm2 = sqrt( r_nrm2 );
-    resid = (DD_Scalar)r_nrm2 / (DD_Scalar)b_nrm2;
+    DD_AVX_nrm2( r,&r_nrm2 );
+    resid = r_nrm2 * b_nrm2 ;
+
     count++;
-
+  }
+  
+  resid.print();
+  if ( SOLVE ) {
+    cout << "----------------------------------解ベクトル------------------------------------\n" << endl;
+    x.print_all();
+    cout << "--------------------------------------------------------------------------------" << endl;
   }
 
-  cout << count << ":" ;
-  resid.print();
+  cout << "%次元数は" << A.N << endl;
+  cout << "%反復回数は" << count << "\n" << endl;
 
-  cout << "----------------------------------解ベクトル------------------------------------\n" << endl;
-  x.print_all();
-  cout << "--------------------------------------------------------------------------------\n" << endl;
+  if ( ( A.N - count ) > 0 )
+    cout << "%収束しました" << endl;
+  else 
+    cout << "%収束しませんでした"  << endl;
   
   A.free();
-  tA.free(); 
   b.free();
   x.free();
   p.free();
@@ -162,7 +170,21 @@ int main( int argc, char* argv[] )
   r.free();
   rr.free();
   q.free();
-  qq.free();
+  qq.free();  
+}
 
+int main( int argc, char* argv[] )
+{
+
+  char filename[256] = {'\0'};
+  sprintf( filename, "%s",argv[1] );
+
+  D_Matrix A;
+  A.input( filename );
+  double start,end;
+  start = omp_get_wtime();
+  bicg( A );
+  end = omp_get_wtime();
+  cout << "%計測時間は" << end - start << endl;
   return 0;
 }

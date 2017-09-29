@@ -128,7 +128,7 @@ void D_Matrix::input_coo(FILE *file){
    /* read data */
    row = new int[nnz];
    col = new int[nnz];
-   val = new double[nnz];
+   val = new double[nnz];//double
    printf("%d %d\n",N,nnz);
 
    for(i=0;i<nnz;i++)
@@ -162,7 +162,7 @@ void D_Matrix::input_crs(FILE* file){
 	col = new int[nnz];
 	val = new double[nnz];
 	row[0] = 0;
-	printf("DD-AVX system: format CRS, N = %d, nnz = %d, filesize = %.3f KB\n",N,nnz,((double)nnz*2+N)/1000);
+	//	printf("DD-AVX system: format CRS, N = %d, nnz = %d, filesize = %.3f KB\n",N,nnz,((double)nnz*2+N)/1000);
 
 	for(i=0;i<nnz;i++)
 	{
@@ -194,16 +194,6 @@ void D_Matrix::input_crs(FILE* file){
 	for(j=1;j<N;j++)
 	  row[j] += 1;
 	/*
-	for(j=0;j<nnz;j++)
-	  printf("%d  %d\n",j,col[j]);
-	printf("----------------------こる--------------------------------\n");
-	for(j=0;j<N+1;j++)
-	  printf("%d  %d\n",j,row[j]);
-	printf("---------------------ろお--------------------------------------\n");
-	for(j=0;j<nnz;j++)
-	  printf("%d  %d\n",j,val[j]);
-	printf("---------------------------------val----------------------------\n");
-	
 		if( fgets(buf, 1024, file) == NULL )
 		{
 			printf("DD-AVX system: cant read data, [row col value]\n");
@@ -227,4 +217,40 @@ void D_Matrix::input_crs(FILE* file){
 		val[i] = value;
 
 		row[N] = nnz;*/
+}
+
+void D_Matrix::output_plane(const char *filename)
+{
+#ifdef ddavx_debug
+	 printf("D_Matrix::output_plane()\n");
+#endif
+   char	buf[1024];
+   int	i;
+   FILE *file;
+
+   file = fopen(filename, "w");
+   if( file==NULL )
+   {
+      printf("can not open file %s",filename);
+      abort();
+   }
+   if(N==0){
+      printf("vector size N is 0\n");
+      abort();
+   }
+   int count = 0;
+   fprintf(file,"%%%MatrixMarket matrix coordinate real general\n");
+   fprintf(file,"%d %d %d\n",N,N,nnz);
+   for(int i=0;i<nnz;i++){
+     if(row[count+1] <= i)
+       count++;
+     fprintf(file,"%d %d %1.15f\n",col[i]+1,count+1,val[i]);
+   }
+   /*
+   for(i=0;i<N;i++)
+   {
+      fprintf(file,"%20.20e\n",hi[i]);
+   }
+   */
+   fclose(file);
 }

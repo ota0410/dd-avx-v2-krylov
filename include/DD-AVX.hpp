@@ -6,14 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-//#include <string>
-//#include <iostream>
 #include <omp.h>
 #include "DD-AVX_Config.hpp"
 #include "DD-AVX_MACRO_Scalar.hpp"
-
-//using std::to_string;
-//using std::cout;
 
 #if USE_AVX==1
 	#include "DD-AVX_MACRO_AVX.hpp"
@@ -115,10 +110,6 @@ class DD_Scalar{
 
       void print() const {
 	printf("hi = %1.15e lo = %1.15e\n", hi, lo);
-	//cout << to_string(hi,"%15.7e");
-	//cout << to_string(lo,"%15.7e");
-	//	printf("hi = %1.15e lo = %.20lf\n", hi, lo);
-	//	printf("hi = %1.15LF lo = %1.15LF\n",hi,lo);
       }
 
       //!binary operator
@@ -207,6 +198,9 @@ class DD_Vector{
       void print_all();
 
       int getsize();
+ 
+      DD_Scalar getelm(int n);
+      DD_Vector chgelm(DD_Scalar val, int n);
 
       void input(const char *filename);
       void input_mm(FILE* file);
@@ -242,7 +236,6 @@ class D_Matrix{
       int* bptr;//bcrs4x1
       int* bindex;
 
-
       D_Matrix()
 	 : format(0)
       {}
@@ -271,8 +264,32 @@ class D_Matrix{
       void input(const char *filename);
       void input_coo(FILE* file);
       void input_crs(FILE* file);
-
+  
+      void output_plane(const char* file);
       //void output_mm(const char* file);
+};
+
+class DD_Matrix{
+   public:
+      int format;//COO=0, CRS=1, BCRS4x1=2, DNS=3
+
+      int N;
+      int nnz;
+      DD_Vector val;
+
+      int* row; //coo
+      int* col;
+
+      int* ptr; //crs
+      int* index;
+
+      int* bptr;//bcrs4x1
+      int* bindex;
+
+      void print_all();
+      void malloc( int n );
+
+      DD_Matrix operator=(const DD_Matrix& DD);
 };
 
 /////////////////Functions/////////////////////////

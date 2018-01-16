@@ -11,6 +11,7 @@
 #define MM_TYPE_GENERAL		"general"
 #define MM_TYPE_SYMM		"symmetric"
 
+int flg = 0;
 ///////////// DD_Vector input ////////////////
 void D_Matrix::input(const char* filename){
 #ifdef ddavx_debug
@@ -67,8 +68,13 @@ void D_Matrix::input(const char* filename){
    }
    if( strncmp(dstruct, MM_TYPE_GENERAL, strlen(MM_TYPE_GENERAL))!=0 )
    {
-      printf("DD-AVX system: Not general\n");
-      abort();
+     if( strncmp(dstruct, MM_TYPE_SYMM, strlen(MM_TYPE_SYMM))==0 )
+     {
+       flg = 1;
+     } else {
+       printf("DD-AVX system: Not general or symmetric\n");
+       abort();
+     }
    }
    do
    {
@@ -99,13 +105,13 @@ void D_Matrix::input(const char* filename){
    	input_crs(file);
 	 break;
       case 1:
-	 input_crs(file);
+	input_crs(file);
 	 break;
       case 2:
-	 input_crs(file);
+	input_crs(file);
 	 break;
       case 3:
-	 input_crs(file);
+	input_crs(file);
 	 break;
       default:
 	 printf("DD-AVX system: error, format is %d",format);
@@ -154,69 +160,85 @@ void D_Matrix::input_coo(FILE *file){
 void D_Matrix::input_crs(FILE* file){
 	char	buf[1024];
 	int	i,j;
-	int idx, jdx, count=0, jb = 1;
+	int idx, jdx, count = 0, jb = 1;
 	double value;
+	int nnz2 = nnz;
 
-	/* read data */
-	row = new int[N+1];
-	col = new int[nnz];
-	val = new double[nnz];
-	row[0] = 0;
-	//	printf("DD-AVX system: format CRS, N = %d, nnz = %d, filesize = %.3f KB\n",N,nnz,((double)nnz*2+N)/1000);
-
-	for(i=0;i<nnz;i++)
-	{
-	  if( fgets(buf, 1024, file) == NULL )
+	if(!flg)
+	  {
+	    /* read data */
+	    row = new int[N+1];
+	    col = new int[nnz];
+	    val = new double[nnz];
+	    row[0] = 0;
+	    //	printf("DD-AVX system: format CRS, N = %d, nnz = %d, filesize = %.3f KB\n",N,nnz,((double)nnz*2+N)/1000);
+	  for(i=0;i<nnz;i++)
 	    {
-	      printf("can't read data, [row col value]\n");
-	      abort();
-	    }
+	      if( fgets(buf, 1024, file) == NULL )
+		{
+		  printf("can't read data, [row col value]\n");
+		  abort();
+		}
 	  
-	  if( sscanf(buf,"%d %d %lf",&idx, &jdx, &value) != 3 )
-	    {
-	      printf("not data, [col=%d,row=%d,val=%f]\n",idx,jdx,value);
-	      abort();
-	    }
-	  //printf("%d %d %e %d\n",idx,jdx,value, jb);
+	      if( sscanf(buf,"%d %d %lf",&idx, &jdx, &value) != 3 )
+		{
+		  printf("not data, [col=%d,row=%d,val=%f]\n",idx,jdx,value);
+		  abort();
+		}
+	      //printf("%d %d %e %d\n",idx,jdx,value, jb);
 	  
-	  if(jb != jdx){
-	    row[jdx-1] = i-1;
-	    //printf("%d,%d\n",jdx-1,row[jdx-1]);
-	  }
-	  jb = jdx;
-	  count++;
+	      if(jb != jdx){
+		row[jdx-1] = i-1;
+		//printf("%d,%d\n",jdx-1,row[jdx-1]);
+	      }
+	      jb = jdx;
+	      count++;
 	  
-	  col[i] = idx-1;
-	  val[i] = value;
+	      col[i] = idx-1;
+	      val[i] = value;
 		
-	}
-	row[N] = nnz;
-	for(j=1;j<N;j++)
-	  row[j] += 1;
-	/*
-		if( fgets(buf, 1024, file) == NULL )
+	    }
+	  row[N] = nnz;
+	  for(j=1;j<N;j++)
+	    row[j] += 1;
+	}else{
+	    /* read data */
+	    row = new int[N+1];
+	    col = new int[nnz];
+	    val = new double[nnz];
+	    row[0] = 0;
+	  for(i=0;i<nnz;i++)
+	    {
+	      
+	      if( fgets(buf, 1024, file) == NULL )
 		{
-			printf("DD-AVX system: cant read data, [row col value]\n");
-			abort();
+		  printf("can't read data, [row col value]\n");
+		  abort();
 		}
-		if( sscanf(buf,"%d %d %lf",&idx, &jdx, &value) != 3 )
+	      
+	      if( sscanf(buf,"%d %d %lf",&idx, &jdx, &value) != 3 )
 		{
-			printf("DD-AVX system: not data, [col=%d,row=%d,val=%f]\n",idx,jdx,value);
-			abort();
+		  printf("not data, [col=%d,row=%d,val=%f]\n",idx,jdx,value);
+		  abort();
 		}
-		//printf("%d %d %e %d\n",idx,jdx,value, jb);
 
-		if(jb != jdx){
-			row[jdx-1] = i-1;
-			//printf("%d,%d\n",jdx-1,row[jdx-1]);
-		}
-		jb = jdx;
-		count++;
-
-		col[i] = idx-1;
-		val[i] = value;
-
-		row[N] = nnz;*/
+	      if(idx != jdx){
+		nnz2 += 1;
+	      }
+	      
+	      if( jb != jdx ){
+		row[jdx-1] = i-1;
+	      }
+	      
+	      jb = jdx;
+	      count++;
+	      col[i] = idx-1;
+	      val[i] = value;
+	    }
+	  row[N] = nnz2;
+	  for(j=1;j<N;j++)
+	    row[j]++;
+	  }
 }
 
 void D_Matrix::output_plane(const char *filename)

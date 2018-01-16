@@ -1,5 +1,6 @@
 #include <DD-AVX.hpp>
 #include <iostream>
+#include <string.h>
 #include <omp.h>
 
 using std::cout;
@@ -80,18 +81,20 @@ void bicg( D_Matrix A ) {
 
   x.broadcast( 0.0 );
   
-  init.broadcast( 0.0 );
+  //  init.broadcast( 1.0 );
+  /* 
   srand((unsigned)time(NULL));
   for (int i = 0; i < A.N; i++) 
     init.hi[i] = (double)rand()/(double)RAND_MAX;
-  
-  //  init.broadcast( 1.0 );
-  /*  
-  for (int i = 0; i < A.N; i++){
-    init.hi[i] = 1.0 * pow(-1.0,i+1);
-    //  init.lo[i] = 0.0;
-  }
   */
+  //  init.broadcast( 1.0 );
+  //  init.output_plane("rand_vec.mtx");
+         
+  for (int i = 0; i < A.N; i++){
+    init.hi[i] = 1.0 * pow(-1.0,i);
+    init.lo[i] = 0.0;
+  }
+  
   
   r.broadcast( 0.0 );
   p.broadcast( 0.0 );
@@ -102,7 +105,7 @@ void bicg( D_Matrix A ) {
   SpMV( A,x,y );
   SpMV( A,init,b );
 
-  DD_AVX_xpay( b,( D_Scalar )(-1.0),y );
+  DD_AVX_xpay( b,( DD_Scalar )(-1.0),y );
   r.copy( y );
   rr.copy( r );
   p.copy( r );
@@ -124,8 +127,9 @@ void bicg( D_Matrix A ) {
     b_scl.dot( pp,q );
     
     if ( count > MAXITR ) {
+      /*
       cout << "\n%BiCGは与えられた許容誤差に収束しませんでした" << endl;
-      cout << "%最後の相対残差は\n" << endl;
+      cout << "%最後の相対残差は\n" << endl;*/
       break;
     }
     
@@ -147,21 +151,33 @@ void bicg( D_Matrix A ) {
     count++;
   }
   
-  resid.print();
   if ( SOLVE ) {
     cout << "----------------------------------解ベクトル------------------------------------\n" << endl;
     x.print_all();
     cout << "--------------------------------------------------------------------------------" << endl;
   }
-
-  cout << "%次元数は" << A.N << endl;
-  cout << "%反復回数は" << count << "\n" << endl;
-
+  
+  // cout << "%次元数は" << A.N << endl;
+  cout << count << ",";
+  resid.print();
+  DD_Vector error;
+  DD_Scalar serror;
+  DD_Scalar sinit;
+  error.malloc( A.N );
+  DD_AVX_axpyz( ( DD_Scalar )(-1.0), init, x, error );
+  DD_AVX_nrm2( error, &serror );
+  DD_AVX_nrm2( init, &sinit );
+  serror = serror / sinit;
+  
+  cout << "error = ";
+  serror.print();
+  
+  /*
   if ( ( A.N - count ) > 0 )
     cout << "%収束しました" << endl;
   else 
     cout << "%収束しませんでした"  << endl;
-  
+  */
   A.free();
   b.free();
   x.free();
@@ -177,14 +193,23 @@ int main( int argc, char* argv[] )
 {
 
   char filename[256] = {'\0'};
+  char *matrix;
   sprintf( filename, "%s",argv[1] );
 
   D_Matrix A;
   A.input( filename );
+  matrix = strrchr(filename,'/');
+  for(int i=1;;i++){
+    if(matrix[i] == '.')
+      break;
+    cout << matrix[i];
+  }
+  cout << ",";
+
   double start,end;
   start = omp_get_wtime();
   bicg( A );
   end = omp_get_wtime();
-  cout << "%計測時間は" << end - start << endl;
+  cout << end - start << endl;
   return 0;
 }

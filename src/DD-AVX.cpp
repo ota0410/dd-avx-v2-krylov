@@ -431,7 +431,7 @@ void D_Matrix::print_all(){
    for(int i=0;i<nnz;i++){
      if(row[count+1] <= i)
        count++;
-     printf("%d\t%d\t%1.15e\n",count,col[i],val[i]);
+     printf("%d\t%d\t%1.15e\n",count+1,col[i]+1,val[i]);
    }
 }
 
@@ -453,7 +453,7 @@ void D_Matrix::free(){
      delete val;
      delete col;
 }
-
+/*
 ///////////////////////DD_Matrix//////////////////////
 void DD_Matrix::print_all(){
 #ifdef ddavx_debug
@@ -500,3 +500,4 @@ DD_Matrix DD_Matrix::operator=(const DD_Matrix& DD) {
 
    return *this;  
 }
+*/

@@ -10,27 +10,18 @@ int main( int argc, char *argv[]){
  
   D_Matrix A;
   A.input( filename1 );
-
-
-  DD_Vector x;
-  DD_Vector y;
-  DD_Vector u;
-  DD_Vector v;
-
-  D_Scalar alpha;
-  DD_Scalar beta = 5.0;
-  DD_Scalar temp2,bb;
-  
-  x.malloc( A.N );
-  y.malloc( A.N );
-  u.malloc( A.N );
-  v.malloc( A.N );
-
-  x.broadcast( 2.0 );//D_vector
-  y.broadcast( 0.0 );//D_vector
-
-
-  
+  //  A.print_all();
+  printf("--------------col----------------\n");
+  for(int i=0; i < A.nnz; i++)
+    printf("%d\n",A.col[i]);
+  printf("--------------row----------------\n");
+  for(int i=0; i < A.N+1; i++)
+    printf("%d\n",A.row[i]);
+  printf("--------------val----------------\n");
+  for(int i=0; i < A.nnz; i++)
+    printf("%f\n",A.val[i]);
+  printf("-----------------------------------\n");
+  A.print_all();
   return 0;
   
 }
